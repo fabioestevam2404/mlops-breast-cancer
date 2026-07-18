@@ -16,7 +16,7 @@ O insight que levo: monitorar só a métrica-alvo esconde o problema. O PSI é o
 
 16 testes, 97.7% de cobertura, CI com lint + Bandit + smoke test do container.
 
-Código no GitHub: [link]
+Código no GitHub: https://github.com/fabioestevam2404/mlops-breast-cancer
 
 #MLOps #MachineLearning #MLflow #Kubernetes #DataEngineering #Python
 
@@ -26,7 +26,7 @@ Um modelo de machine learning que só funciona no notebook do cientista de dados
 
 Foi por isso que meu último projeto de portfólio não parou no treino do modelo — fui até o deploy:
 
-✅ Modelo de classificação com 97% de acurácia
+✅ Recall de 93% na detecção de casos malignos — a métrica que importa quando o erro caro é não detectar
 ✅ Cada experimento rastreado e versionado (nada de "modelo_final_v3_AGORA_VAI.pkl")
 ✅ Sistema de alerta que detecta quando os dados de produção mudam — antes de o modelo errar
 ✅ API rodando em containers com 2 réplicas: se uma cai, a outra segura o tráfego
