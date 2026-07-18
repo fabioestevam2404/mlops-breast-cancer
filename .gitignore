@@ -7,5 +7,6 @@ data/processed/
 reports/*.png
 reports/*.csv
 models/*.joblib
+models/MODEL_VERSION
 .coverage
 .ipynb_checkpoints/
