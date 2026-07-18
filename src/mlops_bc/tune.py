@@ -50,7 +50,7 @@ PARAM_GRID_HALVING = {
 
 def run_search(name: str, search, x_train, y_train, x_test, y_test) -> dict:
     """Executa um buscador, avalia no teste e loga o run completo no MLflow."""
-    with mlflow.start_run(run_name=name):
+    with mlflow.start_run(run_name=name) as run:
         t0 = time.perf_counter()
         search.fit(x_train, y_train)
         elapsed = time.perf_counter() - t0
@@ -68,7 +68,7 @@ def run_search(name: str, search, x_train, y_train, x_test, y_test) -> dict:
         mlflow.log_artifact(log_confusion_matrix(y_test, y_pred, name))
         mlflow.sklearn.log_model(best, artifact_path="model", input_example=x_train.iloc[:2])
 
-        run_id = mlflow.active_run().info.run_id
+        run_id = run.info.run_id
         print(
             f"[tune] {name}: cv_recall={search.best_score_:.4f} "
             f"test_recall={metrics['recall']:.4f} test_f1={metrics['f1']:.4f} "
