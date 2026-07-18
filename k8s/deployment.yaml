@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: breast-cancer-api
+  labels:
+    app: breast-cancer-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: breast-cancer-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0   # zero-downtime: nunca derruba um pod antes do novo estar pronto
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: breast-cancer-api
+    spec:
+      containers:
+        - name: api
+          image: breast-cancer-api:1.0.0
+          imagePullPolicy: IfNotPresent   # imagem local do Docker Desktop (sem registry)
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15

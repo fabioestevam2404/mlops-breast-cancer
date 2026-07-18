@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Lint (Ruff)
+        run: ruff check src api tests
+      - name: Type check (mypy)
+        run: mypy src api
+      - name: Tests + coverage >= 80%
+        run: pytest
+      - name: Security scan (Bandit)
+        run: pip install bandit && bandit -r src api -ll
+
+  docker:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Treinar e exportar modelo (artefato do build)
+        run: |
+          python -m mlops_bc.data
+          python -m mlops_bc.tune
+        env:
+          PYTHONPATH: src
+      - name: Build da imagem
+        run: docker build -t breast-cancer-api:ci .
+      - name: Smoke test do container
+        run: |
+          docker run -d --rm -p 8000:8000 --name smoke breast-cancer-api:ci
+          sleep 8
+          curl -sf http://localhost:8000/health
+          docker stop smoke

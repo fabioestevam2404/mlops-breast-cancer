@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: breast-cancer-api
+  labels:
+    app: breast-cancer-api
+spec:
+  # No K8s do Docker Desktop, LoadBalancer expõe automaticamente em localhost (ADR-003).
+  # Fallback: trocar para type: NodePort e acessar via localhost:<nodePort>.
+  type: LoadBalancer
+  selector:
+    app: breast-cancer-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
