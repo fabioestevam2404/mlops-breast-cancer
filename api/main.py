@@ -9,18 +9,27 @@ from __future__ import annotations
 
 import os
 import time
+import warnings
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
 import joblib
-import pandas as pd
+import numpy as np
 from fastapi import FastAPI, HTTPException
 
 from api.schemas import FEATURE_ORDER, PredictionRequest, PredictionResponse
 
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "models/model.joblib"))
 VERSION_PATH = MODEL_PATH.parent / "MODEL_VERSION"
+
+# O Pipeline foi treinado com um DataFrame nomeado; sem pandas em runtime,
+# a predicao usa um array numpy na mesma ordem (FEATURE_ORDER) e o sklearn
+# avisa que os nomes de coluna nao foram passados — aviso esperado, sem
+# impacto no resultado.
+warnings.filterwarnings(
+    "ignore", message="X does not have valid feature names", category=UserWarning
+)
 
 state: dict[str, Any] = {"model": None, "version": "unknown"}
 
@@ -60,8 +69,8 @@ def predict(payload: PredictionRequest) -> PredictionResponse:
         raise HTTPException(status_code=503, detail="modelo não carregado")
 
     t0 = time.perf_counter()
-    row = {name: getattr(payload, name.replace(" ", "_")) for name in FEATURE_ORDER}
-    features = pd.DataFrame([row], columns=FEATURE_ORDER)
+    row = [getattr(payload, name.replace(" ", "_")) for name in FEATURE_ORDER]
+    features = np.array([row], dtype=float)
     proba_maligno = float(state["model"].predict_proba(features)[0, 1])
     label = int(proba_maligno >= 0.5)
     latency_ms = (time.perf_counter() - t0) * 1000
